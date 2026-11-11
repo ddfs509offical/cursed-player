@@ -1,0 +1,353 @@
+﻿/*
+ * «Обсидиан»: шапка и транспорт.
+ *
+ * Шапка — не ещё одна панель, а тихая полоса над содержимым: поиск, счётчики,
+ * профиль. Транспорт — студийная полоса под рабочей поверхностью: этикетка
+ * слева, управление в центре, громкость справа, перемотка снизу.
+ */
+
+/* ── Шапка ─────────────────────────────────────────────────────────── */
+
+.obs-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 32px 10px 32px;
+  min-height: 58px;
+}
+
+/* Поиск: утопленное поле на панели, а не рамка поверх фона. */
+.obs-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: min(420px, 100%);
+  height: 36px;
+  padding: 0 11px;
+  border-radius: 11px;
+  background: rgb(var(--obs-1));
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.5), inset 0 0 0 1px rgb(255 255 255 / 0.055);
+  transition: box-shadow 160ms var(--obs-ease);
+}
+
+.obs-search:focus-within {
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.5), inset 0 0 0 1px rgb(255 255 255 / 0.16);
+}
+
+.obs-search__icon {
+  color: rgb(var(--obs-ink-3));
+  flex-shrink: 0;
+}
+
+.obs-search input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: rgb(var(--obs-ink));
+}
+
+.obs-search input::placeholder {
+  color: rgb(var(--obs-ink-3));
+}
+
+/* Подсказка клавиши: служебная, но полезная — её видно только здесь. */
+.obs-search__hint {
+  font-family: inherit;
+  font-size: 10.5px;
+  line-height: 1;
+  padding: 3px 5px;
+  border-radius: 5px;
+  color: rgb(var(--obs-ink-3));
+  background: rgb(255 255 255 / 0.06);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07);
+}
+
+.obs-header-bar__spacer {
+  flex: 1;
+}
+
+.obs-header-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Транспорт ─────────────────────────────────────────────────────── */
+
+.obs-transport {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px 30px;
+  background: rgb(var(--obs-1) / 0.95);
+  backdrop-filter: blur(24px) saturate(120%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 -20px 44px -28px rgb(0 0 0 / 0.9);
+  z-index: 25;
+}
+
+/* Засветка прогресса по верхнему краю: видно всегда, места не занимает. */
+.obs-transport::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 2px;
+  width: calc(var(--p, 0) * 100%);
+  background: rgb(var(--obs-light));
+  box-shadow: 0 0 12px rgb(var(--obs-light) / 0.5);
+  transition: width 220ms linear;
+  pointer-events: none;
+}
+
+.obs-transport__label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.obs-transport__track {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  padding: 4px;
+  border-radius: 12px;
+  text-align: left;
+  transition: background 150ms var(--obs-ease);
+}
+
+.obs-transport__track:hover {
+  background: rgb(255 255 255 / 0.05);
+}
+
+.obs-transport__track:disabled:hover {
+  background: transparent;
+}
+
+.obs-transport__thumb {
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.5), 0 8px 16px -10px rgb(0 0 0 / 0.9);
+}
+
+.obs-transport__meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.obs-transport__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  color: rgb(var(--obs-ink));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.obs-transport__artist {
+  font-size: 11.5px;
+  color: rgb(var(--obs-ink-3));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Три полоски «сейчас играет»: двигаются только при воспроизведении. */
+.obs-transport__eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+.obs-transport__eq i {
+  width: 2px;
+  border-radius: 2px;
+  background: rgb(var(--obs-ink-2));
+  animation: obs-eq 900ms ease-in-out infinite;
+}
+
+.obs-transport__eq i:nth-child(1) {
+  height: 60%;
+  animation-delay: -200ms;
+}
+.obs-transport__eq i:nth-child(2) {
+  height: 100%;
+  animation-delay: -600ms;
+}
+.obs-transport__eq i:nth-child(3) {
+  height: 45%;
+  animation-delay: -400ms;
+}
+
+@keyframes obs-eq {
+  0%,
+  100% {
+    transform: scaleY(0.45);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.obs-transport__wave {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgb(var(--obs-ink-2));
+  background: rgb(255 255 255 / 0.08);
+  padding: 2px 6px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+/* Центр: управление. */
+.obs-transport__center {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Главная кнопка транспорта: белый свет, единственный в полосе. */
+.obs-play {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: rgb(var(--obs-light));
+  color: rgb(10 10 12);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.5) inset, 0 8px 20px -10px rgb(255 255 255 / 0.45);
+  transition: transform 150ms var(--obs-ease), background 150ms var(--obs-ease);
+  margin: 0 2px;
+}
+
+.obs-play:hover {
+  background: rgb(255 255 255);
+}
+
+.obs-play:active {
+  transform: scale(0.94);
+}
+
+/* Правая часть: лайк, очередь, громкость. */
+.obs-transport__right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.obs-transport__volicon {
+  color: rgb(var(--obs-ink-3));
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+/* Громкость: тонкая дорожка в один пиксель и светлый бегунок. */
+.obs-volume {
+  width: 96px;
+  height: 16px;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.obs-volume::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.16);
+}
+
+.obs-volume::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  margin-top: -4px;
+  border-radius: 999px;
+  background: rgb(var(--obs-light));
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.6);
+}
+
+.obs-volume:hover::-webkit-slider-runnable-track {
+  background: rgb(255 255 255 / 0.26);
+}
+
+/* Перемотка под всей полосой. */
+.obs-transport__seek {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.obs-transport__time {
+  font-size: 10.5px;
+  color: rgb(var(--obs-ink-3));
+  width: 38px;
+  flex-shrink: 0;
+}
+
+.obs-transport__time:last-child {
+  text-align: right;
+}
+
+.obs-transport__seekbar {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Адаптация ─────────────────────────────────────────────────────── */
+
+@media (max-width: 1180px) {
+  .obs-header-bar {
+    padding-inline: 22px;
+  }
+  .obs-transport {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+}
+
+@media (max-width: 900px) {
+  .obs-header-bar {
+    padding-inline: 16px;
+  }
+  .obs-transport {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding-bottom: 26px;
+  }
+  .obs-transport__right {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .obs-transport__eq i {
+    animation: none;
+  }
+  .obs-transport::before {
+    transition: none;
+  }
+}

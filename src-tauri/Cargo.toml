@@ -1,0 +1,66 @@
+[package]
+name = "music_hub"
+version = "0.1.0"
+description = "Десктопный музыкальный плеер с подключением нескольких сервисов"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[features]
+# Точка входа общая; настольный код отключается cfg.
+default = []
+
+# Tauri CLI просит эту фичу при релизной сборке (в том числе для Android):
+# она включает встроенный протокол, который раздаёт фронтенд из ресурсов.
+custom-protocol = ["tauri/custom-protocol"]
+
+[dependencies]
+# protocol-asset нужен, чтобы WebView мог играть локальные файлы по asset://…
+# tray-icon — иконка в трее и сворачивание туда по выбору пользователя
+tauri = { version = "2", features = ["protocol-asset", "tray-icon"] }
+# Нужен для типа ResizeDirection: tauri не реэкспортирует его в корне
+tauri-runtime = "2"
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Локальное хранилище профилей
+rusqlite = { version = "0.32", features = ["bundled"] }
+# Обработка аватара и баннера: ресайз и сжатие перед сохранением
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp", "gif", "bmp"] }
+# json — отправка JSON-тела в Supabase (send_json), как у остальных запросов
+ureq = { version = "2", features = ["json"] }
+base64 = "0.22"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+# Открытие браузера для входа в Spotify
+open = "5"
+sha2 = "0.10"
+# Теги и длительность локальных файлов
+lofty = "0.22"
+# Подпись ссылки на поток Яндекс.Музыки
+md-5 = "0.10"
+
+# Настольные зависимости: на Android этих крейтов нет или они не собираются.
+[target.'cfg(not(target_os = "android"))'.dependencies]
+# Системные диалоги выбора файлов
+rfd = "0.15"
+# Discord Rich Presence: IPC-сокет есть только в настольных системах
+discord-rich-presence = "0.2"
+[lib]
+# Android и iOS собирают приложение как библиотеку; настольная сборка
+# продолжает собирать бинарник.
+name = "music_hub_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+path = "src/lib.rs"
+
+[[bin]]
+name = "music_hub"
+path = "src/main.rs"
+
+# Понижаем нагрузку линковщика Rust (fat LTO + opt-level=3 вызывали STATUS_STACK_BUFFER_OVERRUN).
+# thin LTO + opt-level=z дают release-быстродействие без тяжёлого fat-LTO линковани��.
+[profile.release]
+lto = "thin"
+opt-level = "z"
+codegen-units = 4
+panic = "abort"

@@ -1,0 +1,10 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Права по умолчанию для главного окна",
+  "permissions": [
+    "core:default",
+    "shell:allow-open",
+    "core:path:allow-resolve-directory"
+  ]
+}

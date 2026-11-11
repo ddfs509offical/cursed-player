@@ -1,0 +1,585 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Поля ввода и текстовые области — один рецепт на всё приложение */
+@layer components {
+  .input {
+    @apply w-full h-9 px-3 rounded-lg bg-inset border border-line/[0.09] text-[13px] text-ink
+      outline-none transition-colors;
+  }
+  .input:focus {
+    @apply border-accentText/50;
+    box-shadow: 0 0 0 3px rgb(var(--color-accent) / 0.12);
+  }
+  textarea.input {
+    @apply h-auto py-2 leading-relaxed;
+  }
+}
+
+/* Плейсхолдер задаём обычным CSS: вариант `placeholder:` внутри @apply
+   Tailwind не раскрывает и роняет сборку стилей целиком. */
+.input::placeholder {
+  color: rgb(var(--color-faint));
+}
+
+/*
+ * Дорожка громкости: нативный ползунок слишком тонкий и почти не виден на
+ * тёмном фоне. Полосу и заполнение рисует сам элемент (фон ставит
+ * компонент), а бегунок делаем своей формы — круг 12 px с белой заливкой,
+ * одинаковый в Chromium и в WebView2.
+ */
+.volume-slider {
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 999px;
+  outline: none;
+}
+.volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgb(var(--color-ink));
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.45);
+  transition: transform 0.14s ease;
+}
+.volume-slider:hover::-webkit-slider-thumb,
+.volume-slider:focus-visible::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+.volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgb(var(--color-ink));
+  border: none;
+  cursor: pointer;
+}
+
+/* Подсветка фокуса поля плывёт вместе с рамкой и мягким кольцом, а не щёлкает
+   (как в макете стеклянной формы) — цвет и box-shadow в одном переходе. */
+.input {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+/*
+ * Кнопка на стеклянной панели: мягкое нажатие (scale 0.98) и плавный фон.
+ * Отдельным классом, потому что кнопки приложения приходят из общих
+ * компонентов, а transition-утилиты у них уже заняты под цвет.
+ */
+.press {
+  transition:
+    transform 0.18s cubic-bezier(0.2, 0, 0, 1),
+    background-color 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
+}
+.press:active {
+  transform: scale(0.98);
+}
+
+/*
+ * «Стекло»: тень и внутренний блик по верхней кромке для поверхностей,
+ * лежащих над содержимым. Фон, прозрачность, blur и рамка задаются утилитами
+ * на месте (bg-surface/85, backdrop-blur-[16px], border-line/10) — здесь только
+ * то, что утилитами не собрать: тень из токена вместе с бликом.
+ *
+ * Блик включаем лишь в тёмных темах: на белой поверхности он не читается, а
+ * когда поверхность лежит над обложкой — выглядит грязной линией. В светлой
+ * теме остаётся своя мягкая тень из токена (--shadow-panel/--shadow-lift).
+ */
+.glass {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
+}
+.glass-raised {
+  box-shadow: var(--shadow-panel), inset 0 1px 0 rgb(255 255 255 / 0.05);
+}
+.glass-float {
+  box-shadow: var(--shadow-lift), inset 0 1px 0 rgb(255 255 255 / 0.05);
+}
+html[data-mode="light"] .glass {
+  box-shadow: none;
+}
+html[data-mode="light"] .glass-raised {
+  box-shadow: var(--shadow-panel);
+}
+html[data-mode="light"] .glass-float {
+  box-shadow: var(--shadow-lift);
+}
+
+/*
+ * Токены темы. Значения по умолчанию совпадают с пресетом «Фиолетовая»,
+ * чтобы первый кадр до запуска React выглядел правильно; дальше их
+ * перезаписывает themeStore.
+ */
+
+/*
+ * Прозрачность: два множителя, которые подмешиваются в сами токены цвета
+ * (см. tailwind.config.js). По умолчанию 1 — вид не меняется, поэтому
+ * ползунки в настройках влияют только на тех, кому это нужно.
+ *   --panel-alpha  — панели и карточки пропускают обои;
+ *   --window-alpha — окно целиком пропускает рабочий стол.
+ */
+:root {
+  --panel-alpha: 1;
+  --window-alpha: 1;
+}
+
+/* Окно прозрачное: фон самой страницы не должен перекрывать рабочий стол. */
+html,
+body,
+#root {
+  background: transparent;
+}
+:root {
+  --color-app: 9 9 12;
+  --color-inset: 12 12 16;
+  --color-surface: 17 17 21;
+  --color-surface-2: 23 23 28;
+  --color-surface-3: 29 29 35;
+  --color-line: 255 255 255;
+  --color-ink: 245 245 247;
+  --color-muted: 150 150 158;
+  --color-faint: 104 104 112;
+  --color-accent: 240 240 242;
+  --color-on-accent: 12 12 14;
+  --color-accent-text: 240 240 242;
+  --color-accent-hover: 208 208 214;
+  --color-cover-a: 38 38 44;
+  --color-cover-b: 74 74 84;
+  --color-cover-c: 37 37 43;
+  --color-cover-ink: 255 255 255;
+  --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -8px rgb(0 0 0 / 0.45);
+  --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.35), 0 16px 32px -12px rgb(0 0 0 / 0.55);
+  /*
+   * Оформление интерфейса. Масштаб и кегль ставит settingsStore инлайном,
+   * а произведение двух множителей двигает текстовые утилиты ниже. Радиусы
+   * переключаются атрибутом data-radius.
+   */
+  --ui-scale: 1;
+  --font-scale: 1;
+  --type-scale: calc(var(--ui-scale) * var(--font-scale));
+  --radius-panel: 14px;
+  --radius-tile: 12px;
+  --radius-control: 10px;
+  /* Плотность по умолчанию — «обычная» */
+  --row-h: 48px;
+  --row-pad: 10px;
+  --gap-grid: 16px;
+  --gap-section: 40px;
+  --page-pad: 24px;
+  color-scheme: dark;
+}
+
+/* Скругление углов: общие классы панелей, плиток и контролов */
+html[data-radius="none"] {
+  --radius-panel: 0px;
+  --radius-tile: 0px;
+  --radius-control: 0px;
+}
+html[data-radius="sm"] {
+  --radius-panel: 8px;
+  --radius-tile: 6px;
+  --radius-control: 6px;
+}
+html[data-radius="md"] {
+  --radius-panel: 14px;
+  --radius-tile: 12px;
+  --radius-control: 10px;
+}
+html[data-radius="lg"] {
+  --radius-panel: 18px;
+  --radius-tile: 16px;
+  --radius-control: 14px;
+}
+
+/*
+ * Масштаб интерфейса. Корневой кегль двигает всё, что в Tailwind считается
+ * в rem (отступы, высоты, сетки), а относительные переменные плотности —
+ * свою абсолютную часть. Так масштаб меняет всю сетку целиком и не ломает
+ * попадание курсора: в отличие от zoom, координаты элементов не «плывут».
+ */
+html {
+  font-size: calc(16px * var(--ui-scale));
+}
+
+/* Плотность интерфейса: пользователь выбирает в настройках */
+html[data-density="compact"] {
+  --row-h: calc(40px * var(--ui-scale));
+  --row-pad: calc(8px * var(--ui-scale));
+  --gap-grid: calc(12px * var(--ui-scale));
+  --gap-section: calc(28px * var(--ui-scale));
+  --page-pad: calc(20px * var(--ui-scale));
+}
+html[data-density="cozy"] {
+  --row-h: calc(48px * var(--ui-scale));
+  --row-pad: calc(10px * var(--ui-scale));
+  --gap-grid: calc(16px * var(--ui-scale));
+  --gap-section: calc(40px * var(--ui-scale));
+  --page-pad: calc(24px * var(--ui-scale));
+}
+html[data-density="airy"] {
+  --row-h: calc(56px * var(--ui-scale));
+  --row-pad: calc(14px * var(--ui-scale));
+  --gap-grid: calc(24px * var(--ui-scale));
+  --gap-section: calc(56px * var(--ui-scale));
+  --page-pad: calc(32px * var(--ui-scale));
+}
+
+body {
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Длительности, счётчики и прочие числа не должны «прыгать» по ширине */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Видимый фокус — единый рецепт для всех интерактивных элементов.
+   Раньше кнопки полностью отключали outline, из-за чего клавиатурная
+   навигация была невидимой. */
+:focus-visible {
+  outline: 2px solid rgb(var(--color-accent-text) / 0.9);
+  outline-offset: 2px;
+}
+
+/* Текст интерфейса не выделяется: ощущение приложения, а не веб-страницы.
+   Там, где выделение нужно, используется класс .selectable. */
+html,
+body {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input,
+textarea,
+[contenteditable="true"],
+.selectable {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Полям ввода обводка фокуса не нужна: подсветка идёт рамкой и мягким кольцом,
+   иначе при клике появлялась белая рамка (акцент бывает почти белым). */
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
+
+/* На обложках фокус-кольцо должно выживать на любом изображении */
+.focus-on-media:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 0.95);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.65);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-ink) / 0.16);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--color-ink) / 0.3);
+  background-clip: content-box;
+}
+
+::selection {
+  background: rgb(var(--color-accent) / 0.35);
+}
+
+/*
+ * Появление раздела. Видимость по умолчанию: базовое состояние элемента —
+ * opacity 1 и без transform, анимация двигает его только по Y.
+ *
+ * Почему не opacity 0 → 1: CSS-анимация тоже требует кадров. Если кадры не
+ * приходят (окно свернули в трей, система загружена, WebView2 не отрисовывает),
+ * элемент остаётся в НАЧАЛЬНОМ состоянии анимации. С opacity 0 это ровно та
+ * пустая тёмная область, на которую жаловался владелец; со сдвигом по Y раздел
+ * виден всегда — просто появляется без анимации. Украшение не управляет
+ * видимостью.
+ */
+@keyframes section-enter {
+  from {
+    transform: translateY(6px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.section-enter {
+  animation: section-enter 0.18s cubic-bezier(0, 0, 0.2, 1);
+}
+
+/*
+ * Появление выпадающего меню: то же правило. Сдвиг и масштаб — да, прозрачность
+ * почти не трогаем (0.97 → 1): если кадры встанут, меню всё равно видно и
+ * кликабельно, а не «невидимая панель поверх интерфейса».
+ */
+@keyframes pop-in {
+  from {
+    opacity: 0.97;
+    transform: scale(0.98) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pop-in {
+  animation: pop-in 0.16s cubic-bezier(0, 0, 0.2, 1);
+  transform-origin: top right;
+}
+
+/* Уважаем системную настройку «меньше движения» */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * ─────────── Общие приёмы плотных экранов (настройки, профиль) ───────────
+ * Тихая плоская сетка: ни размытия, ни стекла — только поверхность,
+ * тонкий разделитель и один акцент. Скругление берётся из переменных, поэтому
+ * одна настройка меняет радиус всех панелей, плиток и полей сразу.
+ */
+.ui-panel {
+  border-radius: var(--radius-panel);
+}
+.ui-tile {
+  border-radius: var(--radius-tile);
+}
+.ui-control {
+  border-radius: var(--radius-control);
+}
+
+/* Строка настройки: разделитель только между строками, без рамок вокруг */
+.setting-row {
+  border-top: 1px solid rgb(var(--color-line) / 0.06);
+}
+.setting-row:first-child {
+  border-top: 0;
+}
+
+/* Поля ввода ходят вместе с общей настройкой скругления */
+.input,
+textarea.input {
+  border-radius: var(--radius-control);
+}
+
+/*
+ * Размер шрифта интерфейса. Текстовые утилиты Tailwind заданы в px, поэтому
+ * общий множитель подставляем точечно — иначе настройка кегля ничего бы не
+ * делала. Список размеров собран по факту использования в src.
+ */
+.text-\[10px\] {
+  font-size: calc(10px * var(--type-scale));
+}
+.text-\[11px\] {
+  font-size: calc(11px * var(--type-scale));
+}
+.text-\[12px\] {
+  font-size: calc(12px * var(--type-scale));
+}
+.text-\[13px\] {
+  font-size: calc(13px * var(--type-scale));
+}
+.text-\[14px\] {
+  font-size: calc(14px * var(--type-scale));
+}
+.text-\[15px\] {
+  font-size: calc(15px * var(--type-scale));
+}
+.text-\[16px\] {
+  font-size: calc(16px * var(--type-scale));
+}
+.text-\[18px\] {
+  font-size: calc(18px * var(--type-scale));
+}
+.text-\[20px\] {
+  font-size: calc(20px * var(--type-scale));
+}
+.text-\[22px\] {
+  font-size: calc(22px * var(--type-scale));
+}
+.text-\[24px\] {
+  font-size: calc(24px * var(--type-scale));
+}
+.text-\[26px\] {
+  font-size: calc(26px * var(--type-scale));
+}
+.text-\[30px\] {
+  font-size: calc(30px * var(--type-scale));
+}
+
+/* ═══════════════ Слой «STUDIO» — редизайн, 28.10.2026 ═══════════════
+ *
+ * Принципы нового языка:
+ *  · Тишина. Один источник света сверху и мелкое зерно вместо двух гигантских
+ *    пятен: фон даёт глубину, но не спорит с содержимым.
+ *  · Плоскость. Ни неоморфизма, ни двойного стекла: слои разделяются тоном,
+ *    волосяной линией и короткой тенью. Размытие остаётся только у плавающих
+ *    слоёв (поповеры, тултипы, мини-плеер).
+ *  · Иерархия. Крупный заголовок с плотным трекингом, тихие подписи, акцент —
+ *    только у главного действия и активного пункта.
+ *  · Ритм. Радиусы 16/13/10, отступы кратны 4, тени короткие и низкие.
+ *  · Движение. 140–200 мс, ease-out. Вход раздела — сдвиг, не прозрачность
+ *    (правило про сбой кадров остаётся в силе).
+ *
+ * Прежние слои целиком сохранены:
+ *   ui_backup_2026-10-28_pre_redesign  — этот вид
+ *   ui_backup_2026-10-24_front         — слой FRONT (стекло + неоморфизм)
+ *   ui_backup_2026-10-24               — вид до FRONT
+ */
+
+/* ─────────────── Фон ─────────────── */
+
+/* Фон плоский: ни радиальных свечений, ни «атмосферных» градиентов, ни зерна.
+   Глубину дают только тон поверхностей и волосяные линии — так интерфейс
+   выглядит как приложение, а не как рекламный лендинг. Обложка и обои остаются
+   единственными яркими объектами на экране. */
+
+/* ─────────────── Поверхности ─────────────── */
+
+/* Плоский слой: тон вместо размытия. Компоненты по-прежнему пишут bg-surface —
+   меняется только результат, поэтому весь интерфейс переходит на новый язык
+   без правки пятидесяти файлов. */
+/* Плоский слой пропускает прозрачность панелей: множитель живёт в
+   --panel-alpha, поэтому тот же класс работает и как плотная карточка, и как
+   стекло поверх обоев — без правки полусотни файлов. */
+.bg-surface {
+  background-color: rgb(var(--color-surface) / var(--panel-alpha, 1));
+}
+
+.ui-panel {
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-panel);
+}
+
+.ui-tile {
+  border-radius: var(--radius-tile);
+}
+
+/* Волосяная линия вместо рамки: 1 px и низкая альфа читаются как граница
+   материала, а не как обводка кнопки. */
+.hairline {
+  border: 1px solid rgb(var(--color-line) / 0.07);
+}
+
+/* ─────────────── Кнопки ─────────────── */
+
+/* Плоская кнопка транспорта: тон, линия, короткая тень. Нажатие — сжатие,
+   а не «вдавливание рельефа»: рельеф на тёмном фоне выглядел грязно. */
+.neu {
+  background: rgb(var(--color-surface-2));
+  border: 1px solid rgb(var(--color-line) / 0.07);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s cubic-bezier(0.2, 0, 0, 1);
+}
+.neu:hover {
+  background: rgb(var(--color-surface-3));
+  border-color: rgb(var(--color-line) / 0.13);
+}
+.neu:active {
+  transform: scale(0.97);
+}
+html[data-mode="light"] .neu {
+  box-shadow: 0 1px 2px rgb(28 30 46 / 0.12);
+}
+
+/* ─────────────── Активный пункт навигации ─────────────── */
+
+/* Акцент слева и тихая подложка: сразу видно, где ты, и не нужно ловить
+   цветную пилюлю посреди меню. */
+.rail-active {
+  position: relative;
+  background: rgb(var(--color-accent) / 0.12);
+  color: rgb(var(--color-ink));
+}
+.rail-active::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  height: 18px;
+  width: 2px;
+  border-radius: 2px;
+  transform: translateY(-50%);
+  background: rgb(var(--color-accent-text));
+}
+
+/* ─────────────── Заголовки ─────────────── */
+
+/* Крупный заголовок экрана: плотный трекинг и оптический размер. Одна
+   утилита на все страницы, чтобы иерархия не расползалась. */
+.title-page {
+  font-size: calc(24px * var(--type-scale));
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: -0.022em;
+}
+
+.title-section {
+  font-size: calc(12px * var(--type-scale));
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--color-faint));
+}
+
+/* ─────────────── Обложки ─────────────── */
+
+/* Обложка «разворачивается» к зрителю совсем слабо: 2° хватает, чтобы оживить
+   сетку, и не хватает, чтобы искажать картинку. */
+.face-wrap {
+  perspective: 900px;
+}
+.face {
+  transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1);
+}
+.face:hover {
+  transform: translateY(-2px) scale(1.012);
+}
+
+/* Полоски «играет» в островке поверх игры: живые, но без резких скачков. */
+@keyframes island-pulse {
+  0%, 100% { transform: scaleY(0.45); }
+  50% { transform: scaleY(1); }
+}
+.island-bar {
+  transform-origin: bottom;
+  animation: island-pulse 900ms ease-in-out infinite;
+}
+.island-bar:nth-child(2) { animation-delay: 150ms; }
+.island-bar:nth-child(3) { animation-delay: 300ms; }

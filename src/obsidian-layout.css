@@ -1,0 +1,206 @@
+﻿/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * «ОБСИДИАН», часть вторая: разметка и отдельные экраны
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Первая часть (obsidian.css) задаёт материал и токены. Здесь — то, что
+ * накладывается на существующую разметку: колонки, навигация, мини-плеер,
+ * строки треков, панели настроек. Классы подключаются точечно, поэтому
+ * экраны, которых новые правила не касаются, выглядят как раньше.
+ */
+
+/* ── Рабочая область ──────────────────────────────────────────────── */
+
+/*
+ * Оболочка: слева «панель управления», справа рабочая поверхность.
+ * Такое деление знает любой, кто работал с музыкальными инструментами
+ * (DAW, студийный пульт) и с библиотеками-каталогами: список слева, лист
+ * справа, транспорт снизу. Пользователь просил оба режима — «просто слушаю»
+ * и «работаю», — и эта раскладка их не разделяет, а совмещает: левый столбец
+ * сжат под задачу «перебираю», правый просторен для «смотрю и слушаю».
+ */
+.obs-app {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+}
+
+/* Левый столбец: тон, отделённый линией, не «карточка с рамкой». */
+.obs-rail {
+  display: flex;
+  flex-direction: column;
+  width: 232px;
+  flex-shrink: 0;
+  padding: 6px 10px 10px;
+  background: rgb(var(--obs-1));
+  box-shadow: inset -1px 0 0 rgb(255 255 255 / 0.055);
+}
+
+/* Пункт навигации: светлая подкладка вместо цветной заливки. */
+.obs-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  height: 36px;
+  margin: 1px 0;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  color: rgb(var(--obs-ink-3));
+  transition: background 150ms var(--obs-ease), color 150ms var(--obs-ease);
+}
+.obs-nav-item:hover {
+  background: rgb(255 255 255 / 0.05);
+  color: rgb(var(--obs-ink));
+}
+.obs-nav-item[data-active="true"] {
+  background: rgb(255 255 255 / 0.085);
+  color: rgb(var(--obs-ink));
+  font-weight: 550;
+}
+/* Активный отмечен вертикальным штрихом света слева: край полосы. */
+.obs-nav-item[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 9px;
+  bottom: 9px;
+  width: 2px;
+  border-radius: 2px;
+  background: rgb(var(--obs-light));
+  box-shadow: 0 0 10px rgb(var(--obs-light) / 0.5);
+}
+
+/* Заголовок группы в столбце: служебный, не кричит. */
+.obs-rail-label {
+  padding: 14px 12px 6px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--obs-ink-3));
+}
+
+/* ── Транспорт: одна строка внизу ─────────────────────────────────── */
+
+/*
+ * Мини-плеер — «транспортная полоса» студийного пульта: обложка слева как
+ * этикетка на пластинке, управление по центру, громкость справа. Полоска
+ * прогресса проходит по верхнему краю как засветка, не занимая высоту.
+ */
+.obs-transport {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  min-height: 78px;
+  padding: 0 16px;
+  background: rgb(var(--obs-1) / 0.94);
+  backdrop-filter: blur(24px) saturate(120%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.065), 0 -18px 40px -24px rgb(0 0 0 / 0.9);
+  z-index: 20;
+}
+
+/* Засветка прогресса по верхнему краю полосы. */
+.obs-transport::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 2px;
+  width: calc(var(--p, 0) * 100%);
+  background: rgb(var(--obs-light));
+  box-shadow: 0 0 12px rgb(var(--obs-light) / 0.55);
+  transition: width 240ms linear;
+  pointer-events: none;
+}
+
+/* ── Обложка ──────────────────────────────────────────────────────── */
+
+/* Этикетка трека в транспорте: без рамок, только тень лежащего предмета. */
+.obs-thumb {
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgb(var(--obs-3));
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.5), 0 8px 18px -10px rgb(0 0 0 / 0.9);
+}
+
+/* ── Строки трека ─────────────────────────────────────────────────── */
+
+/*
+ * В существующих списках строки — это <button> с набором утилит Tailwind.
+ * Перекрываем их материалом, но не ломаем раскладку: только фон и подложка.
+ */
+.obs-list > * {
+  border-radius: var(--radius-tile);
+}
+
+/* ── Панели настроек ──────────────────────────────────────────────── */
+
+/*
+ * Блоки настроек не должны спорить друг с другом. Мягкий тон, кромка, и всё.
+ */
+.obs-section {
+  background: rgb(var(--obs-2));
+  border-radius: calc(var(--radius-panel) + 2px);
+  box-shadow: var(--obs-bevel), var(--obs-shadow-1);
+  padding: 18px 20px;
+}
+
+/* ── Заголовки экранов ────────────────────────────────────────────── */
+
+/*
+ * Крупный тонкий заголовок. На месте прежнего «мелкая метка + крупный
+ * заголовок»: капсовая метка убрана — она дублирует текст и занимает место.
+ */
+.obs-screen-title {
+  font-size: 32px;
+  line-height: 1.05;
+  font-weight: 480;
+  letter-spacing: -0.035em;
+  color: rgb(var(--obs-ink));
+  text-wrap: balance;
+}
+
+/* ── Шапка приложения ─────────────────────────────────────────────── */
+
+/* Панель наверху: те же материалы, что и у транспорта — сквозной язык. */
+.obs-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgb(var(--obs-1) / 0.92);
+  backdrop-filter: blur(20px);
+  box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.06);
+}
+
+/* ── Адаптация ────────────────────────────────────────────────────── */
+
+@media (max-width: 1200px) {
+  .obs-rail {
+    width: 72px;
+    padding-inline: 8px;
+  }
+  /* На узком окне остаются только иконки: подписи уходят, иконка читается. */
+  .obs-rail .obs-nav-item span {
+    display: none;
+  }
+  .obs-rail .obs-nav-item {
+    justify-content: center;
+    padding: 0;
+  }
+  .obs-rail-label {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .obs-rail {
+    display: none;
+  }
+  .obs-transport {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}

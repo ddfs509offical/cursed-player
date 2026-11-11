@@ -1,0 +1,55 @@
+/// Найти текст песни. Возвращает сам текст и остальные варианты (если
+/// источники предложили разные версии) — интерфейс даёт переключиться.
+pub fn fetch(artist: &str, title: &str, duration_sec: u32) -> Result<LyricsAnswer, String> {
+    let artist = artist.trim();
+    let title = title.trim();
+    if title.is_empty() && artist.is_empty() {
+        return Err("Не указаны исполнитель и название — искать нечего".into());
+    }
+
+    let deadline = Fetcher::deadline();
+    let candidates = original_candidates(title);
+    // Производному треку часть бюджета придерживаем: обычный перебор вариантов
+    // иначе занял бы все 8 секунд, и до оригинала дело бы не дошло.
+    let strict_deadline = reserved_deadline(deadline, !candidates.is_empty());
+
+    let strict = run_pass(Pass::Strict, artist, title, duration_sec, strict_deadline);
+    let mut attempts = strict.attempts;
+    let mut answered = strict.answered;
+    let mut network_error = strict.network_error;
+    let mut variants = strict.variants;
+
+    if let Some(candidate) = strict.best {
+        return Ok(candidate.lyrics.answer_with(variants, attempts));
+    }
+
+    // Строгий проход ничего не дал. Если трек производный или коллажный,
+    // пробуем найти текст оригинала — и только тогда.
+    if should_try_original(false, &candidates) {
+        if Instant::now() >= deadline {
+            attempts.push("по оригиналу: время на поиск текста вышло".into());
+        } else {
+            let original = run_pass(
+                Pass::Original(candidates),
+                artist,
+                title,
+                duration_sec,
+                deadline,
+            );
+            attempts.extend(original.attempts);
+            answered |= original.answered;
+            if network_error.is_none() {
+                network_error = original.network_error;
+            }
+            variants.extend(original.variants);
+            if let Some(candidate) = original.best {
+                return Ok(candidate.lyrics.answer_with(variants, attempts));
+            }
+        }
+    }
+
+    if !answered {
+        return Err(network_error.unwrap_or_else(|| "ни один источник текста не ответил".into()));
+    }
+    Ok(Lyrics::not_found(Vec::new()).answer_with(Vec::new(), attempts))
+}

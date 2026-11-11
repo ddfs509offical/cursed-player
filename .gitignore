@@ -1,0 +1,32 @@
+# зависимости и сборка
+node_modules/
+dist/
+dist-update/
+src-tauri/target/
+src-tauri/gen/android/app/build/
+src-tauri/gen/android/build/
+src-tauri/gen/android/.gradle/
+src-tauri/gen/android/local.properties
+src-tauri/gen/android/env.txt
+src-tauri/gen/schemas/
+
+# выпуски и ключи: не должны попадать в репозиторий
+*.apk
+*.aab
+*.exe
+*.msi
+*.zip
+*.keystore
+*.jks
+latest.json
+android.json
+
+# личные заметки и рабочие файлы
+*.log
+instance.lock
+.DS_Store
+Thumbs.db
+
+# локальные настройки редактора
+.vscode/
+.idea/

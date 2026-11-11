@@ -1,0 +1,294 @@
+﻿/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * «ОБСИДИАН» — оболочка: панель, рабочая поверхность, транспорт
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Здесь только геометрия и материал оболочки. Содержимое разделов живёт в
+ * своих файлах и подчиняется тем же токенам из obsidian.css.
+ */
+
+/* ── Общий каркас ──────────────────────────────────────────────────── */
+
+.obs-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  color: rgb(var(--obs-ink));
+  /* Фон окна — самый глубокий тон материала. Обои, если включены, лежат
+     слоем ниже и просвечивают сквозь прозрачность (см. --window-alpha). */
+  background: rgb(var(--obs-0));
+}
+
+.obs-workarea {
+  display: flex;
+  flex: 1;
+  /* Без этого флекс-строка сжимается по содержимому, и содержимое получает
+     ширину ровно в пару сотен пикселей — узкая колонка посреди пустого окна. */
+  width: 100%;
+  min-width: 0;
+  align-self: stretch;
+  min-height: 0;
+  position: relative;
+}
+
+/* ── Панель навигации ──────────────────────────────────────────────── */
+
+.obs-rail-wrap {
+  flex-shrink: 0;
+  min-width: 0;
+  overflow: hidden;
+  /* Ширина анимируется переключателем; содержимое не переносится. */
+  transition: width 280ms var(--obs-ease);
+  /* Панель — отдельный слой материала: чуть светлее окна, с кромкой. */
+  background: rgb(var(--obs-1));
+  box-shadow: inset -1px 0 0 rgb(255 255 255 / 0.055);
+}
+
+.obs-nav {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 8px 10px 10px;
+  min-height: 0;
+}
+
+.obs-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 46px;
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+
+.obs-nav__mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.5), 0 6px 14px -8px rgb(0 0 0 / 0.9);
+}
+
+/* Название набирается тонко и плотно: это подпись на корпусе, а не реклама. */
+.obs-nav__name {
+  font-size: 14.5px;
+  font-weight: 550;
+  letter-spacing: -0.022em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgb(var(--obs-ink));
+}
+
+.obs-nav__items {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 6px;
+}
+
+/* Разделитель между разделами и настройками: короткая линия, не на всю ширину. */
+.obs-nav__rule {
+  height: 1px;
+  margin: 8px 10px;
+  background: rgb(255 255 255 / 0.06);
+}
+
+.obs-nav__spacer {
+  flex: 1;
+}
+
+/* ── Пункт разделa ─────────────────────────────────────────────────── */
+
+.obs-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  letter-spacing: -0.008em;
+  color: rgb(var(--obs-ink-3));
+  white-space: nowrap;
+  transition:
+    background 150ms var(--obs-ease),
+    color 150ms var(--obs-ease);
+}
+
+.obs-nav-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.obs-nav-item:hover {
+  background: rgb(255 255 255 / 0.05);
+  color: rgb(var(--obs-ink));
+}
+
+.obs-nav-item[data-active="true"] {
+  background: rgb(255 255 255 / 0.085);
+  color: rgb(var(--obs-ink));
+}
+
+/* Штрих света на краю панели отмечает активный раздел. */
+.obs-nav-item[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 9px;
+  bottom: 9px;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: rgb(var(--obs-light));
+  box-shadow: 0 0 10px rgb(var(--obs-light) / 0.45);
+}
+
+/* В узкой панели остаются только значки по центру. */
+.obs-shell[data-rail="compact"] .obs-nav-item {
+  justify-content: center;
+  padding: 0;
+}
+
+/* ── Профиль ───────────────────────────────────────────────────────── */
+
+.obs-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 8px;
+  border-radius: 12px;
+  text-align: left;
+  transition: background 150ms var(--obs-ease);
+}
+
+.obs-profile:hover {
+  background: rgb(255 255 255 / 0.055);
+}
+
+.obs-profile[data-active="true"] {
+  background: rgb(255 255 255 / 0.085);
+}
+
+.obs-profile__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.obs-profile__name {
+  font-size: 13px;
+  font-weight: 550;
+  color: rgb(var(--obs-ink));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.obs-profile__handle {
+  font-size: 11.5px;
+  color: rgb(var(--obs-ink-3));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.obs-profile__chev {
+  color: rgb(var(--obs-ink-3));
+  flex-shrink: 0;
+}
+
+.obs-shell[data-rail="compact"] .obs-profile {
+  justify-content: center;
+  padding: 0;
+}
+
+/* ── Переключатель панели ──────────────────────────────────────────── */
+
+/*
+ * Маленькая кнопка на кромке панели. Постоянно видна, но приглушена:
+ * это настройка пространства, а не действие на каждый день.
+ */
+.obs-rail-toggle {
+  position: absolute;
+  top: 62px;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  color: rgb(var(--obs-ink-3));
+  background: rgb(var(--obs-2));
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.09), var(--obs-shadow-1);
+  transition:
+    left 280ms var(--obs-ease),
+    color 150ms var(--obs-ease),
+    background 150ms var(--obs-ease);
+}
+
+.obs-rail-toggle:hover {
+  color: rgb(var(--obs-ink));
+  background: rgb(var(--obs-4));
+}
+
+/* ── Рабочая поверхность ───────────────────────────────────────────── */
+
+.obs-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.obs-header {
+  flex-shrink: 0;
+}
+
+/*
+ * Прокручиваемая область. Отдельный элемент, чтобы шапка не уезжала,
+ * а полоса прокрутки не перекрывала содержимое.
+ */
+.obs-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  /* Отступ ровно под сетку: 32 px по краям, сверху меньше — там шапка. */
+  padding: 22px 32px 40px;
+  scroll-behavior: smooth;
+}
+
+.obs-content > * {
+  max-width: 1180px;
+}
+
+/* ── Адаптация ─────────────────────────────────────────────────────── */
+
+@media (max-width: 1100px) {
+  .obs-content {
+    padding: 18px 22px 32px;
+  }
+}
+
+@media (max-width: 760px) {
+  .obs-content {
+    padding: 16px 16px 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .obs-rail-wrap,
+  .obs-rail-toggle {
+    transition: none;
+  }
+  .obs-content {
+    scroll-behavior: auto;
+  }
+}
